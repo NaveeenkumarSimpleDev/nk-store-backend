@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  label String
+  value String
+}
+
+model User {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  email          String @unique
+  role           String @default("user")
+  hashedPassword String
+
+  cart Cart?
+}
+
+model Cart {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  cartItems Product[]
+  size      String
+  color     String
+
+  userId String? @unique @db.ObjectId
+  User   User?   @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String
+  price         Int
+  discountPrice Int
+  rating        Int
+  stock         Int
+  brand         String
+  category      String
+  images        String[] @default([])
+  colors        Color[]
+  sizes         Size[]
+
+  cartId String? @db.ObjectId
+  cart   Cart?   @relation(fields: [cartId], references: [id])
+}
+
+model Color {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  value String
+
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?  @db.ObjectId
+}
+
+model Size {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  value     String
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId String?  @db.ObjectId
+}
