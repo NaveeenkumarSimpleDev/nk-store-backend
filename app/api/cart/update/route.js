@@ -6,23 +6,23 @@ import { NextResponse } from "next/server";
 const prisma = new PrismaClient();
 
 export async function GET() {
-  return NextResponse.json("");
+  return NextResponse.json("cart-update", {
+    status: 200,
+  });
 }
 
 export async function POST(req, res) {
   const reqData = await req.json();
 
-  const { userId, product } = reqData;
+  const { userId, productId, type } = reqData;
 
-  if (!product || !userId) {
-    return NextResponse.json("", { status: 401 });
+  if (!productId || !userId || !type) {
+    return NextResponse.json("", { status: 400 });
   }
+
   const cart = await prisma.cart.findFirst({
     where: {
       userId: userId,
-    },
-    include: {
-      cartItems: true,
     },
   });
 
@@ -32,15 +32,53 @@ export async function POST(req, res) {
     });
   }
 
-  const updatedCart = await prisma.cart?.update({
-    include: {
-      cartItems: true,
+  // delete item
+  if (type === "delete") {
+    const updatedCartItems = cart.cartItems.filter(
+      (item) => item.id !== productId
+    );
+
+    const updatedCart = await prisma.cart.update({
+      where: {
+        userId,
+      },
+      data: {
+        cartItems: updatedCartItems,
+      },
+    });
+
+    return NextResponse.json(updatedCart, {
+      status: 200,
+    });
+  }
+
+  const exsistingProduct = cart.cartItems.findIndex(
+    (item) => item.id === productId
+  );
+
+  const updatedCartItems = [...cart.cartItems];
+
+  const minQuantity = Number(updatedCartItems[exsistingProduct]?.quantity) > 1;
+  const maxQuantity = Number(updatedCartItems[exsistingProduct]?.quantity) < 10;
+
+  if (type === "inc" && maxQuantity) {
+    updatedCartItems[exsistingProduct] = {
+      ...updatedCartItems[exsistingProduct],
+      quantity: Number(updatedCartItems[exsistingProduct].quantity) + 1,
+    };
+  } else if (type === "dec" && minQuantity) {
+    updatedCartItems[exsistingProduct] = {
+      ...updatedCartItems[exsistingProduct],
+      quantity: Number(updatedCartItems[exsistingProduct].quantity) - 1,
+    };
+  }
+
+  const updatedCart = await prisma.cart.update({
+    where: {
+      userId,
     },
     data: {
-      cartItems: [...cart.cartItems, { ...product }],
-    },
-    where: {
-      userId: userId,
+      cartItems: updatedCartItems,
     },
   });
 

@@ -27,8 +27,8 @@ model User {
 }
 
 model Cart {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  cartItems Product[]
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  cartItems Json?
   size      String
   color     String
 
@@ -46,25 +46,7 @@ model Product {
   stock         Int
   brand         String
   category      String
-  images        String[] @default([])
-  colors        Color[]
-  sizes         Size[]
-
-  cartId String? @db.ObjectId
-  cart   Cart?   @relation(fields: [cartId], references: [id])
-}
-
-model Color {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  value String
-
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId String?  @db.ObjectId
-}
-
-model Size {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  value     String
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId String?  @db.ObjectId
+  images        String[]
+  colors        String[]
+  sizes         String[]
 }

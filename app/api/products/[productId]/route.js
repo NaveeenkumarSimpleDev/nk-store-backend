@@ -9,10 +9,6 @@ export async function GET(req, { params }) {
     where: {
       id: productId,
     },
-    include: {
-      colors: true,
-      sizes: true,
-    },
   });
 
   if (!product) {

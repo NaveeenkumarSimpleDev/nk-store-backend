@@ -20,9 +20,6 @@ export async function POST(req, res) {
     where: {
       userId: id,
     },
-    include: {
-      cartItems: true,
-    },
   });
 
   return NextResponse.json(cart, {
