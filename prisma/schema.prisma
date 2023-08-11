@@ -11,9 +11,9 @@ datasource db {
 }
 
 model Brand {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
-  label String
-  value String
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  value   String
+  Product Product[]
 }
 
 model User {
@@ -22,8 +22,11 @@ model User {
   email          String @unique
   role           String @default("user")
   hashedPassword String
+  address        Json?
+  cart           Cart?
 
-  cart Cart?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Cart {
@@ -44,9 +47,13 @@ model Product {
   discountPrice Int
   rating        Int
   stock         Int
-  brand         String
+  brand         Brand    @relation(fields: [brandId], references: [id])
   category      String
   images        String[]
   colors        String[]
   sizes         String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  brandId   String   @db.ObjectId
 }
