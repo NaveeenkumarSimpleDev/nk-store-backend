@@ -25,8 +25,10 @@ model User {
   address        Json?
   cart           Cart?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  favouriteId String?     @db.ObjectId
+  Favourite   Favourite[]
 }
 
 model Cart {
@@ -56,4 +58,11 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   brandId   String   @db.ObjectId
+}
+
+model Favourite {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  favourites Json?
+  User       User   @relation(fields: [userId], references: [id])
+  userId     String @db.ObjectId
 }

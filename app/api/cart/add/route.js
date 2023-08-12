@@ -38,7 +38,6 @@ export async function POST(req, res) {
 
   let updatedCartItems;
 
-  console.log(data?.product?.quantity);
   if (exsistingCart.cartItems) {
     updatedCartItems = [
       ...exsistingCart.cartItems,
