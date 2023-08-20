@@ -28,7 +28,7 @@ export async function POST(req) {
     (item) => item !== productId
   );
 
-  const update = await prisma.favourite.updateMany({
+  await prisma.favourite.updateMany({
     data: {
       favourites: updatedFavourites,
     },

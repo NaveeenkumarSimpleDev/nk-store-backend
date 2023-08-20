@@ -8,7 +8,7 @@ export async function GET(req) {
 const prisma = new PrismaClient();
 
 export async function POST(req) {
-  const userId =  req.json();
+  const userId = await req.json();
 
   if (!userId) {
     return NextResponse.json("", {
@@ -24,6 +24,7 @@ export async function POST(req) {
   if (!favourites) {
     return NextResponse.json("No Favourites", { status: 200 });
   }
+
 
   return NextResponse.json(
     { favourites: favourites.favourites },
