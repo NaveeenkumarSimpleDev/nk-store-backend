@@ -8,6 +8,8 @@ export async function GET(req) {
   response.cookies.delete("jwt", {
     httpOnly: true,
     path: "/",
+    sameSite: 'none',
+    secure: true
   });
 
   return response;

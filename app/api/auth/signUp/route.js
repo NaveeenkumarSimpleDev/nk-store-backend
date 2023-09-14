@@ -50,6 +50,14 @@ export async function POST(req, res) {
     },
   });
 
+  const cart = await prisma.cart.create({
+    data:{
+      userId:user.id,
+      size: "",
+      color: "",
+    }
+  })
+
   const resData = { id: user.id, role: user.role };
   const token = sign(resData, process.env.JWT_SECRET);
 

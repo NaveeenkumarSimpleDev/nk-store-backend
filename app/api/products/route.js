@@ -9,7 +9,7 @@ export async function GET(req) {
   const { nextUrl } = await req;
 
   const sort = nextUrl.searchParams.get("sort");
-  const range = nextUrl.searchParams.get("range")?.split(",");
+  const range = nextUrl.searchParams.get("range")?.split("-");
   const categories = nextUrl.searchParams.get("cat")?.split(",");
   const brands = nextUrl.searchParams.get("brand")?.split(",");
 

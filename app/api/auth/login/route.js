@@ -47,7 +47,7 @@ export async function POST(req, res) {
       }
     );
   }
-
+  
   const resData = { id: user.id, role: user.role };
   const token = sign(resData, process.env.JWT_SECRET);
 
@@ -59,6 +59,8 @@ export async function POST(req, res) {
     httpOnly: true,
     path: "/",
     expires: new Date(Date.now() + 3600000),
+    sameSite:'none',
+    secure:true
   });
 
   return response;

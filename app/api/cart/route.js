@@ -1,14 +1,15 @@
 import { getPrismaClient } from "@/provider/prismadb";
+import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-const prisma = await getPrismaClient();
+const prisma = new PrismaClient()
 
 export async function GET(){
   return NextResponse.json('')
 }
 
 export async function POST(req, res) {
-  const id = req.json();
+  const id = await req.json();
 
   if (!id) {
     return new Response("", {
@@ -16,7 +17,7 @@ export async function POST(req, res) {
     });
   }
 
-  const cart = await prisma.cart?.findFirst({
+  const cart = await prisma.cart?.findUnique({
     where: {
       userId: id,
     },
@@ -25,4 +26,5 @@ export async function POST(req, res) {
   return NextResponse.json(cart, {
     status: 200,
   });
+
 }
