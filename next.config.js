@@ -8,7 +8,7 @@ const nextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: "http://localhost:5173",
+            value: "https://nk-store-frontend.vercel.app/",
           },
           {
             key: "Access-Control-Allow-Methods",
