@@ -7,13 +7,13 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL_1")
 }
 
 model Brand {
   id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  category String
   value   String
-  Product Product[]
 }
 
 model User {
@@ -34,8 +34,8 @@ model User {
 model Cart {
   id        String @id @default(auto()) @map("_id") @db.ObjectId
   cartItems Json?
-  size      String
-  color     String
+  size      String?
+  color     String?
 
   userId String? @unique @db.ObjectId
   User   User?   @relation(fields: [userId], references: [id])
@@ -45,19 +45,14 @@ model Product {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   description   String
-  price         Int
-  discountPrice Int
-  rating        Int
-  stock         Int
-  brand         Brand    @relation(fields: [brandId], references: [id])
-  category      String
-  images        String[]
-  colors        String[]
-  sizes         String[]
-
+  mrp         Int
+  discountPrice  Int
+  rating        Int?
+  brandId     String
+  category    String
+  variations    Variation[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  brandId   String   @db.ObjectId
 }
 
 model Favourite {
@@ -65,4 +60,17 @@ model Favourite {
   favourites Json?
   User       User   @relation(fields: [userId], references: [id])
   userId     String @unique @db.ObjectId 
+}
+
+model Variation {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  color          String?
+  size           String?
+  price          Int
+  customAttributes Json?
+  specifications Json?
+  stock          Int
+  images         String[] @default([])
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
 }

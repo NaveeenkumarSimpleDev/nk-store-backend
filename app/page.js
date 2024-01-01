@@ -1,4 +1,5 @@
-
 export default function Home() {
-return <h1>Nk store backend</h1>
+  const env = process.env.DATABASE_URL_1;
+  console.log(env, "/n");
+  return <h1>Nk store backend</h1>;
 }
