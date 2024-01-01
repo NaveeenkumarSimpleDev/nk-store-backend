@@ -8,7 +8,7 @@ const nextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://nk-store-frontend.vercel.app",
+            value: "https://hrj37c-5173.csb.app",
           },
           {
             key: "Access-Control-Allow-Methods",

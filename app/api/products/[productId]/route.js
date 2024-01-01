@@ -9,6 +9,9 @@ export async function GET(req, { params }) {
     where: {
       id: productId,
     },
+    include: {
+      variations: true,
+    },
   });
 
   if (!product) {

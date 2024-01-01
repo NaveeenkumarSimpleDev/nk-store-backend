@@ -12,7 +12,7 @@ datasource db {
 
 model Brand {
   id      String    @id @default(auto()) @map("_id") @db.ObjectId
-  category String
+  category String?
   value   String
 }
 
@@ -48,7 +48,6 @@ model Product {
   mrp         Int
   discountPrice  Int
   rating        Int?
-  brandId     String
   category    String
   variations    Variation[]
   createdAt DateTime @default(now())

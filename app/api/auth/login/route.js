@@ -18,7 +18,7 @@ export async function POST(req, res) {
       { message: "Invaild Credentials" },
       {
         status: 400,
-      }
+      },
     );
   }
 
@@ -33,7 +33,7 @@ export async function POST(req, res) {
       { message: { email: "User not Found!" } },
       {
         status: 400,
-      }
+      },
     );
   }
 
@@ -44,10 +44,10 @@ export async function POST(req, res) {
       { message: { password: "Incorrect Password" } },
       {
         status: 400,
-      }
+      },
     );
   }
-  
+
   const resData = { id: user.id, role: user.role };
   const token = sign(resData, process.env.JWT_SECRET);
 
@@ -59,8 +59,8 @@ export async function POST(req, res) {
     httpOnly: true,
     path: "/",
     expires: new Date(Date.now() + 3600000),
-    sameSite:'none',
-    secure:true
+    sameSite: "none",
+    secure: true,
   });
 
   return response;
