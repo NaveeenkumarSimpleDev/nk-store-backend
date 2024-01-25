@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req) {
   return NextResponse.json("hello Admin 1");
@@ -12,7 +12,7 @@ export async function POST(req) {
     !data.category?.length > 0 ||
     !data.description?.length > 0 ||
     !data.discountPrice?.length > 0 ||
-    !data.mar?.length > 0
+    !data.mrp?.length > 0
   ) {
     return NextResponse.json("Please fill all the fields", {
       status: 400,
@@ -35,6 +35,7 @@ export async function POST(req) {
   });
 
   if (variations) {
+    console.log("inside");
     variations.map(async (vari) => {
       const variation = await prisma.variation.create({
         data: {
@@ -42,16 +43,16 @@ export async function POST(req) {
           stock: Number(vari.stock),
           productId: product.id,
           customAttributes: vari.customAttributes,
-          images: vari.images,
+          images: [""],
           specifications: vari.specifications,
         },
       });
 
-      console.log({ variation });
+      // console.log({ variation });
     });
   }
 
-  const res = await prisma.product.findFirst({
+  const res = await prisma.product.findMany({
     where: {
       id: product.id,
     },
@@ -59,6 +60,37 @@ export async function POST(req) {
       variations: true,
     },
   });
-
   return NextResponse.json(res);
+}
+
+export async function DELETE(req) {
+  const data = await req.json();
+
+  if (!data?.id) {
+    return NextResponse.json("Please provide id", {
+      status: 400,
+    });
+  }
+  const product = await prisma.product.findFirst({
+    where: {
+      id: data?.id,
+    },
+  });
+
+  if (!product) {
+    return NextResponse.json("Product not found", {
+      status: 400,
+    });
+  }
+
+  const res = await prisma.product.delete({
+    where: {
+      id: data?.id,
+    },
+    include: {
+      variations: true,
+    },
+  });
+
+  return NextResponse.json("Successfully Created");
 }

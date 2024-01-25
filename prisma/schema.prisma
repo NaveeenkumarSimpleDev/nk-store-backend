@@ -71,5 +71,5 @@ model Variation {
   stock          Int
   images         String[] @default([])
   productId      String
-  product        Product  @relation(fields: [productId], references: [id])
+  product        Product  @relation(fields: [productId], references: [id],onDelete: Cascade)
 }
