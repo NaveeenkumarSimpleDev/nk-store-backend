@@ -35,7 +35,6 @@ export async function POST(req) {
   });
 
   if (variations) {
-    console.log("inside");
     variations.map(async (vari) => {
       const variation = await prisma.variation.create({
         data: {
@@ -47,8 +46,6 @@ export async function POST(req) {
           specifications: vari.specifications,
         },
       });
-
-      // console.log({ variation });
     });
   }
 

@@ -11,10 +11,11 @@ export async function POST(req) {
   const data = await req.json();
 
   console.log({ data });
-  if (!data || !data.id)
+  if (!data || !data.id) {
     return NextResponse.json("Please provide data", {
       status: 400,
     });
+  }
 
   const variations = data.variations;
   if (!variations.length > 0) {
@@ -60,29 +61,56 @@ export async function POST(req) {
     },
   });
 
-  const product = await prisma.product.create({
-    data: {
-      createdAt: data.createdAt,
-      updatedAt: new Date(),
+  const oldVariations = await prisma.variation.findMany({
+    where: {
+      productId: data.id,
     },
   });
 
-  variations.map(async (vari) => {
-    const variation = await prisma.variation.create({
-      data: {
-        price: Number(vari.price),
-        stock: Number(vari.stock),
-        productId: product.id,
-        customAttributes: vari.customAttributes,
-        images: vari.images,
-        specifications: vari.specifications,
+  const deletedVariations = oldVariations?.filter((vari) => {
+    return !variations?.some((newVari) => newVari.id === vari.id);
+  });
+
+  deletedVariations?.map(async (vari) => {
+    await prisma.variation.delete({
+      where: {
+        id: vari.id,
       },
     });
   });
 
+  variations.map(async (vari) => {
+    if (!vari.id) {
+      await prisma.variation.create({
+        data: {
+          price: Number(vari.price),
+          stock: Number(vari.stock),
+          productId: data.id,
+          customAttributes: vari.customAttributes,
+          images: vari.images,
+          specifications: vari.specifications,
+        },
+      });
+    } else {
+      const variation = await prisma.variation.update({
+        where: {
+          id: vari.id,
+        },
+        data: {
+          price: Number(vari.price),
+          stock: Number(vari.stock),
+          productId: data.id,
+          customAttributes: vari.customAttributes,
+          images: vari.images,
+          specifications: vari.specifications,
+        },
+      });
+    }
+  });
+
   const res = await prisma.product.findMany({
     where: {
-      id: product.id,
+      id: data.id,
     },
     include: {
       variations: true,
