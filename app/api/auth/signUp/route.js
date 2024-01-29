@@ -58,7 +58,7 @@ export async function POST(req, res) {
     }
   })
 
-  const resData = { id: user.id, role: user.role };
+  const resData = { id: user.id,,email:user.email, role: user.role };
   const token = sign(resData, process.env.JWT_SECRET);
 
   const response = new NextResponse(JSON.stringify(resData), {

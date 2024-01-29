@@ -10,7 +10,10 @@ export async function GET(req) {
   const sort = nextUrl.searchParams.get("sort");
   const range = nextUrl.searchParams.get("price_range")?.split("-");
   const categories = nextUrl.searchParams.get("cat")?.split(",");
-  const brands = nextUrl.searchParams.get("brands")?.split(",");
+  const brands = nextUrl.searchParams
+    .get("brands")
+    ?.split(",")
+    ?.map((b) => b.toLowerCase());
 
   const sortBy =
     sort === "Newest"
@@ -53,6 +56,7 @@ export async function GET(req) {
     condition = {
       include: {
         variations: true,
+        brand: true,
       },
       where: whereCondition,
       orderBy: sortBy,
@@ -61,6 +65,7 @@ export async function GET(req) {
     condition = {
       include: {
         variations: true,
+        brand: true,
       },
       where: whereCondition,
     };
@@ -68,6 +73,14 @@ export async function GET(req) {
 
   const products = await prisma.product.findMany(condition);
 
+  if (brands?.length > 0) {
+    const filterdProducts = products.filter(
+      (p) => brands.includes(p.brand.value.toLowerCase()) && p,
+    );
+    return NextResponse.json(filterdProducts, {
+      status: 200,
+    });
+  }
   return NextResponse.json(products, {
     status: 200,
   });
