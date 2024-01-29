@@ -13,7 +13,8 @@ export async function POST(req) {
     !data.category?.length > 0 ||
     !data.description?.length > 0 ||
     !data.discountPrice?.length > 0 ||
-    !data.mrp?.length > 0
+    !data.mrp?.length > 0 ||
+    !data.brand
   ) {
     return NextResponse.json("Please fill all the fields", {
       status: 400,
@@ -25,13 +26,39 @@ export async function POST(req) {
       status: 400,
     });
   }
+  let brand;
+  if (data.brand.id) {
+    const exsistBrand = await prisma.brand.findFirst({
+      where: {
+        id: data.brand.id,
+      },
+    });
+
+    brand = exsistBrand;
+  }
+
+  if (data.brand.newBrand) {
+    const newBrand = await prisma.brand.create({
+      data: {
+        value: data.brand.newBrand,
+      },
+    });
+
+    brand = newBrand;
+  }
+
   const product = await prisma.product.create({
+    include: {
+      brand: true,
+    },
     data: {
       title: data.title,
       category: data.category,
       description: data.description,
       discountPrice: Number(data.discountPrice),
+      createdBy: data.email,
       mrp: Number(data.mrp),
+      brandId: brand.id,
     },
   });
 
@@ -87,6 +114,7 @@ export async function DELETE(req) {
     },
     include: {
       variations: true,
+      brand: true,
     },
   });
 

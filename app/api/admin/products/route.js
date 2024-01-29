@@ -43,3 +43,17 @@ export async function POST(req) {
 
   return NextResponse.json(products);
 }
+
+export async function DELETE(req) {
+  const { id } = await req.json();
+
+  await prisma.product.delete({
+    where: {
+      id,
+    },
+    include: {
+      variations: true,
+    },
+  });
+  return NextResponse.json("");
+}
