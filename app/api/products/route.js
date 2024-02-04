@@ -18,7 +18,7 @@ export async function GET(req) {
   const sortBy =
     sort === "Newest"
       ? {
-          createdAt: "asc",
+          createdAt: "desc",
         }
       : sort === "priceLowToHigh"
         ? {

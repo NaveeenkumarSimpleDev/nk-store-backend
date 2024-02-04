@@ -73,7 +73,7 @@ model Variation {
   customAttributes Json?
   specifications Json?
   stock          Int
-  images         String[] @default([])
+  images         String[] 
   productId      String
   product        Product  @relation(fields: [productId], references: [id],onDelete: Cascade)
 }
