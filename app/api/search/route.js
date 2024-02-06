@@ -34,7 +34,7 @@ export async function POST(req) {
       brand: true,
     },
   });
-  if (!brands && !products) {
+  if (brands.length == 0 && products.length == 0) {
     return NextResponse.json({ error: "No products found!" });
   }
 

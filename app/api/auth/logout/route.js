@@ -4,13 +4,12 @@ export async function GET(req) {
   const response = new NextResponse("logout success", {
     status: 200,
   });
-
-  response.cookies.delete("jwt", {
+  const cookieOptions = {
     httpOnly: true,
     path: "/",
-    sameSite: 'none',
-    secure: true
-  });
-
+    sameSite: "None",
+    secure: true,
+  };
+  response.cookies.set("jwt", "", cookieOptions);
   return response;
 }
