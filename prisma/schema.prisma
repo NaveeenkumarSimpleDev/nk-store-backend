@@ -30,14 +30,12 @@ model User {
   updatedAt   DateTime    @updatedAt
   favouriteId String?     @db.ObjectId
   Favourite   Favourite[]
+  orderItems  Orders?
 }
 
 model Cart {
   id        String @id @default(auto()) @map("_id") @db.ObjectId
   cartItems Json?
-  size      String?
-  color     String?
-
   userId String? @unique @db.ObjectId
   User   User?   @relation(fields: [userId], references: [id])
 }
@@ -67,13 +65,17 @@ model Favourite {
 
 model Variation {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  color          String?
-  size           String?
-  price          Int
   customAttributes Json?
   specifications Json?
+  price       Int
   stock          Int
   images         String[] 
   productId      String
   product        Product  @relation(fields: [productId], references: [id],onDelete: Cascade)
+}
+model Orders {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderItems Json
+  User       User   @relation(fields: [userId], references: [id])
+  userId     String @unique @db.ObjectId 
 }

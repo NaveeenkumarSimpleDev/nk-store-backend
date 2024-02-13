@@ -10,24 +10,22 @@ const prisma = new PrismaClient();
 
 export async function POST(req, res) {
   const data = await req.json();
-
+  const { userId, variationId, quantity } = data;
   if (!data) {
     return NextResponse.json("", { status: 401 });
   }
 
   const exsistingCart = await prisma.cart?.findFirst({
     where: {
-      userId: data.userId,
+      userId,
     },
   });
 
   if (!exsistingCart) {
     const cart = await prisma.cart.create({
       data: {
-        cartItems: [data?.product],
-        userId: data?.userId,
-        size: "",
-        color: "",
+        userId,
+        cartItems: [{ variationId, quantity }],
       },
     });
 
@@ -36,30 +34,72 @@ export async function POST(req, res) {
     });
   }
 
-  let updatedCartItems;
+  let updatedCartItems = exsistingCart.cartItems;
 
   if (exsistingCart.cartItems) {
-    updatedCartItems = [
-      ...exsistingCart.cartItems,
-      {
-        ...data?.product,
-        quantity: data?.product?.quantity ? data?.product?.quantity : 1,
-      },
-    ];
+    updatedCartItems.push({ variationId, quantity: quantity || 1 });
   } else {
-    updatedCartItems = [{ ...data?.product, quantity: 1 }];
+    updatedCartItems = [{ variationId, quantity: quantity || 1 }];
   }
 
   const updatedCart = await prisma.cart.update({
     where: {
-      userId: data.userId,
+      userId,
     },
     data: {
       cartItems: updatedCartItems,
     },
   });
 
-  return NextResponse.json(updatedCart, {
-    status: 200,
+  const variationIds = updatedCart?.cartItems?.map((i) => ({
+    id: i.variationId,
+    quantity: i.quantity,
+  }));
+
+  if (!variationIds) return NextResponse.json(updatedCart);
+
+  // const variations = await Promise.all(
+  //   variationIds.map(async (item) => {
+  //     const variation = await prisma.variation.findFirst({
+  //       where: {
+  //         id: item.id,
+  //       },
+  //       include: {
+  //         product: true,
+  //       },
+  //     });
+
+  //     return {
+  //       ...variation,
+  //       quantity: item.quantity,
+  //     };
+  //   }),
+  // );
+
+  const variations = await prisma.variation.findMany({
+    where: {
+      id: {
+        in: variationIds.map((i) => i.id),
+      },
+    },
+    include: {
+      product: true,
+    },
   });
+
+  const modifiedData = variations.map((i) => {
+    const find = variationIds.find((v) => v.id === i.id);
+
+    return {
+      ...i,
+      quantity: find.quantity,
+    };
+  });
+
+  return NextResponse.json(
+    { ...updatedCart, cartItems: modifiedData },
+    {
+      status: 200,
+    },
+  );
 }

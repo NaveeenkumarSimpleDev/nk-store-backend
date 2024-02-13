@@ -14,9 +14,9 @@ export async function GET() {
 export async function POST(req, res) {
   const reqData = await req.json();
 
-  const { userId, productId, type } = reqData;
+  const { userId, variationId, type } = reqData;
 
-  if (!productId || !userId || !type) {
+  if (!variationId || !userId) {
     return NextResponse.json("", { status: 400 });
   }
 
@@ -35,7 +35,7 @@ export async function POST(req, res) {
   // delete item
   if (type === "delete") {
     const updatedCartItems = cart.cartItems.filter(
-      (item) => item.id !== productId
+      (item) => item.variationId !== variationId,
     );
 
     const updatedCart = await prisma.cart.update({
@@ -53,7 +53,7 @@ export async function POST(req, res) {
   }
 
   const exsistingProduct = cart.cartItems.findIndex(
-    (item) => item.id === productId
+    (item) => item.variationId === variationId,
   );
 
   const updatedCartItems = [...cart.cartItems];
@@ -82,7 +82,55 @@ export async function POST(req, res) {
     },
   });
 
-  return NextResponse.json(updatedCart, {
-    status: 200,
+  const variationIds = updatedCart?.cartItems?.map((i) => ({
+    id: i.variationId,
+    quantity: i.quantity,
+  }));
+
+  if (!variationIds) return NextResponse.json(updatedCart);
+
+  // const variations = await Promise.all(
+  //   variationIds.map(async (item) => {
+  //     const variation = await prisma.variation.findFirst({
+  //       where: {
+  //         id: item.id,
+  //       },
+  //       include: {
+  //         product: true,
+  //       },
+  //     });
+
+  //     return {
+  //       ...variation,
+  //       quantity: item.quantity,
+  //     };
+  //   }),
+  // );
+
+  const variations = await prisma.variation.findMany({
+    where: {
+      id: {
+        in: variationIds.map((i) => i.id),
+      },
+    },
+    include: {
+      product: true,
+    },
   });
+
+  const modifiedData = variations.map((i) => {
+    const find = variationIds.find((v) => v.id === i.id);
+
+    return {
+      ...i,
+      quantity: find.quantity,
+    };
+  });
+
+  return NextResponse.json(
+    { ...updatedCart, cartItems: modifiedData },
+    {
+      status: 200,
+    },
+  );
 }
