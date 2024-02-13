@@ -42,7 +42,7 @@ export async function POST(req) {
 
   const order = await prisma.orders.create({
     data: {
-      userId,
+      userId: data.userId,
       orderItems: JSON.stringify(data.items),
     },
   });
