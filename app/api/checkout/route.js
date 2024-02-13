@@ -28,7 +28,7 @@ export async function POST(req) {
 
       return {
         price_data: {
-          currency: "inr", // Assuming the currency is USD for non-INR transactions
+          currency: "inr",
           product_data: {
             name: variation.product.title,
             images: variation.images,
@@ -54,10 +54,10 @@ export async function POST(req) {
       userId: data.userId,
       orderId: order?.id || "",
     },
-    success_url: process.env.ALLOWED_ORIGIN + "/success",
+    success_url: process.env.ALLOWED_ORIGIN + "/checkout/success",
     cancel_url: process.env.ALLOWED_ORIGIN,
     billing_address_collection: "required",
-    shipping_address_collection: { allowed_countries: ["IN"] },
+    shipping_address_collection: { allowed_countries: ["IN", "US", "GB"] },
     currency: "inr",
   });
 

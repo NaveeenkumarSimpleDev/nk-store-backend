@@ -30,7 +30,7 @@ model User {
   updatedAt   DateTime    @updatedAt
   favouriteId String?     @db.ObjectId
   Favourite   Favourite[]
-  orderItems  Orders?
+  orderItems  Orders[]
 }
 
 model Cart {
@@ -75,8 +75,8 @@ model Variation {
 }
 model Orders {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderItems Json
-  User       User   @relation(fields: [userId], references: [id])
-  userId     String @unique @db.ObjectId 
-  isPaid     Boolean @default(false)
+  orderItems    Json
+  userId        String  
+  user          User   @relation(fields:[userId], references:[id])
+  isPaid        Boolean  @default(false)
 }
