@@ -40,12 +40,19 @@ export async function POST(req) {
     }),
   );
 
+  const order = await prisma.orders.create({
+    data: {
+      userId,
+      orderItems: JSON.stringify(data.items),
+    },
+  });
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
     metadata: {
       userId: data.userId,
-      items: data.items,
+      orderId: order?.id || "",
     },
     success_url: process.env.ALLOWED_ORIGIN + "/success",
     cancel_url: process.env.ALLOWED_ORIGIN,

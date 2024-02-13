@@ -78,4 +78,5 @@ model Orders {
   orderItems Json
   User       User   @relation(fields: [userId], references: [id])
   userId     String @unique @db.ObjectId 
+  isPaid     Boolean @default(false)
 }
