@@ -23,7 +23,7 @@ model User {
   email          String @unique
   role           String @default("user")
   hashedPassword String
-  address        Json?
+  address        Address[]
   cart           Cart?
 
   createdAt   DateTime    @default(now())
@@ -79,4 +79,19 @@ model Orders {
   userId        String  
   user          User   @relation(fields:[userId], references:[id])
   isPaid        Boolean  @default(false)
+}
+
+model Address{
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  area    String
+  landmark   String?
+  locality  String
+  mobile   String
+  name   String
+  pincode  String
+  city    String
+  state   String
+  
+  userId        String  
+  user          User   @relation(fields:[userId], references:[id])  
 }
