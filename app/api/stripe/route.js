@@ -1,12 +1,11 @@
 import stripe from "stripe";
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { getPrismaClient } from "@/provider/prismadb";
 
 export async function GET() {
   return NextResponse.json("/stripe");
 }
-
-const prisma = new PrismaClient();
+const prisma = await getPrismaClient();
 export async function POST(request) {
   const body = await request.text();
 

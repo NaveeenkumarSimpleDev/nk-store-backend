@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
-const prisma = new PrismaClient();
+import { getPrismaClient } from "@/provider/prismadb";
+import { NextResponse } from "next/server";
+
+const prisma = await getPrismaClient();
 
 export async function GET(req) {
   return NextResponse.json("hello Admin 1");

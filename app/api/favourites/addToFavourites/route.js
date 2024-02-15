@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { getPrismaClient } from "@/provider/prismadb";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   return NextResponse.json("", { status: 200 });
 }
 
-const prisma = new PrismaClient();
+const prisma = await getPrismaClient();
 
 export async function POST(req, res) {
   const { productId, userId } = await req.json();
@@ -46,7 +46,7 @@ export async function POST(req, res) {
       { favourites: favourites?.favourites },
       {
         status: 200,
-      }
+      },
     );
   } else {
     const updatedFavourites = [...exsistingFavourites?.favourites, productId];
@@ -70,7 +70,7 @@ export async function POST(req, res) {
 
     return NextResponse.json(
       { favourites: newFav?.favourites },
-      { status: 200 }
+      { status: 200 },
     );
   }
 }

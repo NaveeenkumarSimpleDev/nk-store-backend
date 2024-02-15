@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { getPrismaClient } from "@/provider/prismadb";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
 
-const prisma = new PrismaClient();
+const prisma = await getPrismaClient();
 export async function GET(req) {
   return NextResponse.json("Checkout api.");
 }

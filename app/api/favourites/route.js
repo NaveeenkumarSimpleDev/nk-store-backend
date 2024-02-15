@@ -1,20 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { getPrismaClient } from "@/provider/prismadb";
 import { NextResponse } from "next/server";
-const prisma = new PrismaClient();
+
+const prisma = await getPrismaClient();
 
 export async function GET(req) {
-  const brands = ["apple"];
-  const res = await prisma.product.findMany({
-    include: {
-      brand: true,
-    },
-  });
-
-  const brand = res.filter(
-    (p) => brands.includes(p.brand.value.toLowerCase()) && p,
-  );
-  console.log({ brand });
-  return NextResponse.json(brand, { status: 200 });
+  return NextResponse.json("", { status: 200 });
 }
 
 export async function POST(req) {
