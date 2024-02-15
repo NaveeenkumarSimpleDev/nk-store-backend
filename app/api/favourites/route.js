@@ -35,8 +35,5 @@ export async function POST(req) {
     return NextResponse.json("No Favourites", { status: 200 });
   }
 
-  return NextResponse.json(
-    { favourites: favourites.favourites },
-    { status: 200 },
-  );
+  return NextResponse.json(favourites.favourites, { status: 200 });
 }

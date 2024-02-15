@@ -92,42 +92,46 @@ export async function POST(req) {
     return !variations?.some((newVari) => newVari.id === vari.id);
   });
 
-  deletedVariations?.map(async (vari) => {
-    await prisma.variation.delete({
-      where: {
-        id: vari.id,
-      },
-    });
-  });
-
-  variations.map(async (vari) => {
-    if (!vari.id) {
-      await prisma.variation.create({
-        data: {
-          price: Number(vari.price),
-          stock: Number(vari.stock),
-          productId: data.id,
-          customAttributes: vari.customAttributes,
-          images: vari.images,
-          specifications: vari.specifications,
-        },
-      });
-    } else {
-      const variation = await prisma.variation.update({
+  Promise.all(
+    deletedVariations?.map(async (vari) => {
+      await prisma.variation.delete({
         where: {
           id: vari.id,
         },
-        data: {
-          price: Number(vari.price),
-          stock: Number(vari.stock),
-          productId: data.id,
-          customAttributes: vari.customAttributes,
-          images: vari.images,
-          specifications: vari.specifications,
-        },
       });
-    }
-  });
+    }),
+  );
+
+  Promise.all(
+    variations.map(async (vari) => {
+      if (!vari.id) {
+        await prisma.variation.create({
+          data: {
+            price: Number(vari.price),
+            stock: Number(vari.stock),
+            productId: data.id,
+            customAttributes: vari.customAttributes,
+            images: vari.images,
+            specifications: vari.specifications,
+          },
+        });
+      } else {
+        const variation = await prisma.variation.update({
+          where: {
+            id: vari.id,
+          },
+          data: {
+            price: Number(vari.price),
+            stock: Number(vari.stock),
+            productId: data.id,
+            customAttributes: vari.customAttributes,
+            images: vari.images,
+            specifications: vari.specifications,
+          },
+        });
+      }
+    }),
+  );
 
   const res = await prisma.product.findMany({
     where: {

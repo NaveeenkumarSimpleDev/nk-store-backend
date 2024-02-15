@@ -30,22 +30,6 @@ export async function POST(req, res) {
 
   if (!variationIds) return NextResponse.json(cart);
 
-  // const variations = await Promise.all(
-  //   variationIds.map(async (item) => {
-  //     const variation = await prisma.variation.findUnique({
-  //       where: {
-  //         id: item.id,
-  //       },
-  //       include: {
-  //         product: true,
-  //       },
-  //     });
-  //     return {
-  //       ...variation,
-  //       quantity: item.quantity,
-  //     };
-  //   }),
-  // );
   const variations = await prisma.variation.findMany({
     where: {
       id: {

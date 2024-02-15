@@ -12,7 +12,7 @@ export async function POST(req) {
   if (!data) {
     return NextResponse.json("required id", { status: 400 });
   }
-
+  const id = data.id;
   const area = data.area;
   const landmark = data.landmark;
   const locality = data.locality;
@@ -22,14 +22,25 @@ export async function POST(req) {
   const city = data.city;
   const state = data.state;
   const userId = data.userId;
-  if (!userId) {
+  if (!userId || !userId) {
     return NextResponse.json("required id", { status: 401 });
   }
 
-  const newAddress = await prisma.address?.create({
+  const addressFromDb = await prisma.address?.findFirst({
+    where: {
+      userId,
+    },
+  });
+  if (!addressFromDb) {
+    return NextResponse.json("Not found", { status: 400 });
+  }
+  const update = await prisma.address?.updateMany({
+    where: {
+      userId,
+      id,
+    },
     data: {
       area,
-      userId,
       mobile,
       name,
       city,
@@ -39,6 +50,11 @@ export async function POST(req) {
       locality,
     },
   });
+  const updatedAdd = await prisma.address.findFirst({
+    where: {
+      id,
+    },
+  });
 
-  return NextResponse.json(newAddress);
+  return NextResponse.json(updatedAdd);
 }
