@@ -35,7 +35,7 @@ export async function POST(req) {
 
   const products = await prisma.product.findMany({
     where: {
-      createdBy: user.email,
+      createdBy: user.id,
     },
     include: {
       variations: true,
@@ -57,5 +57,5 @@ export async function DELETE(req) {
       variations: true,
     },
   });
-  return NextResponse.json("");
+  return NextResponse.json("Successfully Deleted.");
 }

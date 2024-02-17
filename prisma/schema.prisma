@@ -1,13 +1,12 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL_1")
+  url      = "mongodb+srv://naveen:c7E6k85yhyL1IWIX@cluster0.prtxhtu.mongodb.net/test"
 }
 
 model Brand {
@@ -67,6 +66,7 @@ model Variation {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   customAttributes Json?
   specifications Json?
+  mrp  Int?
   price       Int
   stock          Int
   images         String[] 
@@ -75,10 +75,12 @@ model Variation {
 }
 model Orders {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  orderItems    Json
+  shipperId    String
+  orderItem    Json
   userId        String  
+  selectedAddress   String
   user          User   @relation(fields:[userId], references:[id])
-  isPaid        Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Address{

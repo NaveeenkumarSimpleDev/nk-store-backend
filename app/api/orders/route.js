@@ -1,7 +1,9 @@
 import { getPrismaClient } from "@/provider/prismadb";
+import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-const prisma = await getPrismaClient();
+// const prisma = await getPrismaClient();
+const prisma = new PrismaClient();
 export async function GET(req) {
   return NextResponse.json("Order.");
 }
@@ -16,7 +18,9 @@ export async function POST(req) {
   const orders = await prisma.orders.findMany({
     where: {
       userId,
-      // isPaid: true,
+    },
+    orderBy: {
+      createdAt: "asc",
     },
   });
 
@@ -24,32 +28,5 @@ export async function POST(req) {
     return NextResponse.json([], { status: 200 });
   }
 
-  const formatedOrders = await Promise.all(
-    orders.map(async (order) => {
-      const items = JSON.parse(order.orderItems);
-      const formatedVariation = await Promise.all(
-        items?.map(async (item) => {
-          const { variationId, quantity } = item;
-
-          const variation = await prisma.variation.findFirst({
-            where: {
-              id: variationId,
-            },
-            include: {
-              product: true,
-            },
-          });
-
-          return {
-            ...variation,
-            quantity,
-          };
-        }),
-      );
-      return formatedVariation;
-    }),
-  );
-
-  console.log({ formatedOrders });
-  return NextResponse.json(formatedOrders);
+  return NextResponse.json(orders);
 }

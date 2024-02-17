@@ -6,6 +6,7 @@ export async function GET() {
   return NextResponse.json("/stripe");
 }
 const prisma = await getPrismaClient();
+
 export async function POST(request) {
   const body = await request.text();
 
@@ -27,17 +28,45 @@ export async function POST(request) {
   if (eventType === "checkout.session.completed") {
     const { metadata } = event.data.object;
 
-    const order = await prisma.orders.updateMany({
-      where: {
-        id: metadata.orderId,
-        userId: metadata.userId,
-      },
-      data: {
-        isPaid: true,
-      },
-    });
+    const keys = Object.keys(metadata);
+    const userId = metadata.userId;
+    const selectedAddress = metadata.selectedAddress;
 
-    return NextResponse.json({ message: "OK", order });
+    Promise.all(
+      keys.forEach(async (k) => {
+        if (k == "userId") return;
+        const values = metadata[k].split(",");
+        const [id, quantity, buyPrice] = values;
+
+        const variation = await prisma.product.findFirst({
+          where: {
+            id,
+          },
+          include: {
+            product: true,
+          },
+        });
+
+        if (!variation) return;
+
+        const formatedVariation = {
+          ...variation,
+          quantity,
+          buyPrice,
+        };
+
+        await prisma.orders.create({
+          data: {
+            userId,
+            orderItem: formatedVariation,
+            shipperId: variation.product.createdBy,
+            selectedAddress,
+          },
+        });
+      })
+    );
+
+    return NextResponse.json({ message: "OK" });
   }
 
   return new Response("", { status: 200 });

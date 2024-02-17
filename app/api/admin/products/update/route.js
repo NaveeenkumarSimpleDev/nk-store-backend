@@ -99,7 +99,7 @@ export async function POST(req) {
           id: vari.id,
         },
       });
-    }),
+    })
   );
 
   Promise.all(
@@ -130,17 +130,8 @@ export async function POST(req) {
           },
         });
       }
-    }),
+    })
   );
 
-  const res = await prisma.product.findMany({
-    where: {
-      id: data.id,
-    },
-    include: {
-      variations: true,
-      brand: true,
-    },
-  });
-  return NextResponse.json(res);
+  return NextResponse.json("Successfully Updated.");
 }
