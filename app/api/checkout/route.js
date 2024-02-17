@@ -14,6 +14,7 @@ export async function GET(req) {
 export async function POST(req) {
   const data = await req.json();
 
+  let formatedData = [];
   const lineItems = await Promise.all(
     data.items.map(async (item) => {
       const variation = await prisma.variation.findFirst({
@@ -29,6 +30,12 @@ export async function POST(req) {
         throw new Error(`Variation with ID ${item.variationId} not found.`);
       }
 
+      formatedData.push({
+        variationId: variation.id,
+        quantity: item.quantity,
+        buyPrice: variation.price,
+      });
+
       return {
         price_data: {
           currency: "inr",
@@ -40,21 +47,31 @@ export async function POST(req) {
         },
         quantity: item.quantity,
       };
-    }),
+    })
   );
-  // const order = await prisma.orders.create({
-  //   data: {
-  //     userId: data.userId,
-  //     orderItems: JSON.stringify(data.items),
-  //   },
-  // });
+
+  let metadata = {
+    userId: data.userId,
+    selectedAddress: data.selectedAddress,
+  };
+
+  formatedData.forEach((i, idx) => {
+    const convertToString = i.id + "," + i.quantity + "," + i.buyPrice;
+
+    metadata = {
+      ...metadata,
+      [`variation${idx + 1}`]: convertToString,
+    };
+  });
+
+  if (formatedData.length > 50) {
+    return NextResponse.json("", 400);
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: lineItems,
-    metadata: {
-      userId: data.userId,
-      // orderId: order.id,
-    },
+    metadata,
     success_url: process.env.ALLOWED_ORIGIN + "?checkout_success=true",
     cancel_url: process.env.ALLOWED_ORIGIN,
     shipping_address_collection: { allowed_countries: ["IN", "US", "GB"] },

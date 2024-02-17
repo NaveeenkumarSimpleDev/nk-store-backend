@@ -47,6 +47,15 @@ export async function POST(req) {
 
     brand = newBrand;
   }
+  const user = await prisma.user.findFirst({
+    where: {
+      email: data.email,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json("", { status: 401 });
+  }
 
   const product = await prisma.product.create({
     include: {
@@ -57,7 +66,7 @@ export async function POST(req) {
       category: data.category,
       description: data.description,
       discountPrice: Number(data.discountPrice),
-      createdBy: data.email,
+      createdBy: user.id,
       mrp: Number(data.mrp),
       brandId: brand.id,
     },
@@ -71,7 +80,7 @@ export async function POST(req) {
           stock: Number(vari.stock),
           productId: product.id,
           customAttributes: vari.customAttributes,
-          images: [""],
+          images: vari.images || [],
           specifications: vari.specifications,
         },
       });
@@ -86,7 +95,7 @@ export async function POST(req) {
       variations: true,
     },
   });
-  return NextResponse.json(res);
+  return NextResponse.json("Successfully created");
 }
 
 export async function DELETE(req) {
@@ -109,7 +118,7 @@ export async function DELETE(req) {
     });
   }
 
-  const res = await prisma.product.delete({
+  await prisma.product.delete({
     where: {
       id: data?.id,
     },
@@ -119,5 +128,5 @@ export async function DELETE(req) {
     },
   });
 
-  return NextResponse.json("Successfully Created");
+  return NextResponse.json("Successfully Created.");
 }
