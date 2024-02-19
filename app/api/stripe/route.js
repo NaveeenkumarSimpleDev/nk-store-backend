@@ -32,15 +32,18 @@ export async function POST(request) {
     const userId = metadata.userId;
     const selectedAddress = metadata.selectedAddress;
 
+    if (!keys) {
+      return NextResponse.json("no metadata found");
+    }
     Promise.all(
-      keys.forEach(async (k) => {
-        if (k == "userId") return;
-        const values = metadata[k].split(",");
-        const [id, quantity, buyPrice] = values;
+      keys.map(async (k) => {
+        if (k == "userId" || k == "selectedAddress") return;
+        const values = metadata[k]?.split(",");
+        const [variationId, quantity, buyPrice] = values;
 
-        const variation = await prisma.product.findFirst({
+        const variation = await prisma.variation.findFirst({
           where: {
-            id,
+            id: variationId,
           },
           include: {
             product: true,

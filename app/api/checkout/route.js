@@ -56,7 +56,7 @@ export async function POST(req) {
   };
 
   formatedData.forEach((i, idx) => {
-    const convertToString = i.id + "," + i.quantity + "," + i.buyPrice;
+    const convertToString = i.variationId + "," + i.quantity + "," + i.buyPrice;
 
     metadata = {
       ...metadata,
