@@ -20,7 +20,7 @@ export async function POST(req, res) {
       { message: "Invaild Credentials" },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -35,7 +35,7 @@ export async function POST(req, res) {
       { message: "User Already exsist!" },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -49,14 +49,6 @@ export async function POST(req, res) {
     },
   });
 
-  const cart = await prisma.cart.create({
-    data: {
-      userId: user.id,
-      size: "",
-      color: "",
-    },
-  });
-
   const resData = { id: user.id, email: user.email, role: user.role };
   const token = sign(resData, process.env.JWT_SECRET);
 
@@ -65,7 +57,7 @@ export async function POST(req, res) {
   });
 
   response.cookies.set("jwt", token, {
-    httpOnly: true,
+    // httpOnly: true,
     path: "/",
     expires: new Date(Date.now() + 3600000),
   });

@@ -12,7 +12,7 @@ export async function GET() {
 export async function POST(req, res) {
   const reqData = await req.json();
 
-  const { userId, variationId, type } = reqData;
+  const { userId, variationId, type, quantity } = reqData;
 
   if (!variationId || !userId) {
     return NextResponse.json("", { status: 400 });
@@ -33,7 +33,7 @@ export async function POST(req, res) {
   // delete item
   if (type === "delete") {
     const updatedCartItems = cart.cartItems.filter(
-      (item) => item.variationId !== variationId,
+      (item) => item.variationId !== variationId
     );
 
     const updatedCart = await prisma.cart.update({
@@ -51,7 +51,7 @@ export async function POST(req, res) {
   }
 
   const exsistingProduct = cart.cartItems.findIndex(
-    (item) => item.variationId === variationId,
+    (item) => item.variationId === variationId
   );
 
   const updatedCartItems = [...cart.cartItems];
@@ -62,12 +62,12 @@ export async function POST(req, res) {
   if (type === "inc" && maxQuantity) {
     updatedCartItems[exsistingProduct] = {
       ...updatedCartItems[exsistingProduct],
-      quantity: Number(updatedCartItems[exsistingProduct].quantity) + 1,
+      quantity: Number(quantity) + 1,
     };
   } else if (type === "dec" && minQuantity) {
     updatedCartItems[exsistingProduct] = {
       ...updatedCartItems[exsistingProduct],
-      quantity: Number(updatedCartItems[exsistingProduct].quantity) - 1,
+      quantity: Number(quantity) - 1,
     };
   }
 
@@ -129,6 +129,6 @@ export async function POST(req, res) {
     { ...updatedCart, cartItems: modifiedData },
     {
       status: 200,
-    },
+    }
   );
 }
