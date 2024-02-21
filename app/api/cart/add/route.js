@@ -14,22 +14,17 @@ export async function POST(req, res) {
     return NextResponse.json("", { status: 401 });
   }
 
-  const exsistingCart = await prisma.cart?.findFirst({
+  let exsistingCart = await prisma.cart?.findFirst({
     where: {
       userId,
     },
   });
 
   if (!exsistingCart) {
-    const cart = await prisma.cart.create({
+    exsistingCart = await prisma.cart.create({
       data: {
         userId,
-        cartItems: [{ variationId, quantity: quantity || 1 }],
       },
-    });
-
-    return NextResponse.json(cart, {
-      status: 200,
     });
   }
 
@@ -99,6 +94,6 @@ export async function POST(req, res) {
     { ...updatedCart, cartItems: modifiedData },
     {
       status: 200,
-    },
+    }
   );
 }

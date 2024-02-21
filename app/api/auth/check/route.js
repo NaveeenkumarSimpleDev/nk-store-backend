@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 export async function GET(req) {
   const cookie = await req.cookies.get("jwt");
-  if (!cookie) {
+  if (!cookie?.value) {
     return NextResponse.json("", {
       status: 401,
     });

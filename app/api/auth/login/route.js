@@ -18,7 +18,7 @@ export async function POST(req, res) {
       { message: "Invaild Credentials" },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -33,7 +33,7 @@ export async function POST(req, res) {
       { message: { email: "User not Found!" } },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -44,7 +44,7 @@ export async function POST(req, res) {
       { message: { password: "Incorrect Password" } },
       {
         status: 400,
-      },
+      }
     );
   }
 
@@ -56,7 +56,7 @@ export async function POST(req, res) {
   });
 
   response.cookies.set("jwt", token, {
-    httpOnly: true,
+    // httpOnly: true,
     path: "/",
     expires: new Date(Date.now() + 3600000),
     sameSite: "none",
