@@ -20,7 +20,7 @@ export async function POST(req) {
       userId,
     },
     orderBy: {
-      createdAt: "asc",
+      createdAt: "desc",
     },
   });
 
