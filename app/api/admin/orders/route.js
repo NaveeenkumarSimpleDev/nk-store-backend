@@ -44,11 +44,11 @@ export async function POST(req) {
     },
   });
 
-  const pendingsOrders = orders?.filter((o) => o.status == "pending");
-  const otherOrders = orders?.filter((o) => o.status != "pending");
+  const canceledOrders = orders?.filter((o) => o.status == "canceled");
+  const otherOrders = orders?.filter((o) => o.status != "canceled");
   const sortedOrders =
-    pendingsOrders?.length > 0
-      ? pendingsOrders.concat(otherOrders || [])
+    canceledOrders?.length > 0
+      ? otherOrders.concat(canceledOrders || [])
       : otherOrders;
 
   return NextResponse.json({ orders: sortedOrders });
