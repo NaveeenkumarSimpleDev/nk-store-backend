@@ -7,93 +7,96 @@ export async function GET() {
 
 const prisma = await getPrismaClient();
 
-export async function POST(req, res) {
+async function updateCartWithRetries(
+  userId,
+  variationId,
+  quantity,
+  retries = 5
+) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const updatedCart = await prisma.$transaction(async (prisma) => {
+        let existingCart = await prisma.cart.findFirst({
+          where: { userId },
+        });
+
+        if (!existingCart) {
+          existingCart = await prisma.cart.create({
+            data: { userId },
+          });
+        }
+
+        let updatedCartItems = existingCart.cartItems || [];
+        const itemIndex = updatedCartItems.findIndex(
+          (item) => item.variationId === variationId
+        );
+
+        if (itemIndex >= 0) {
+          updatedCartItems[itemIndex].quantity += quantity;
+        } else {
+          updatedCartItems.push({ variationId, quantity });
+        }
+
+        return await prisma.cart.update({
+          where: { userId },
+          data: { cartItems: updatedCartItems },
+        });
+      });
+
+      return updatedCart;
+    } catch (error) {
+      if (attempt < retries && error.code === "P2034") {
+        console.warn(
+          `Retry ${attempt}/${retries}: Retrying transaction due to conflict.`
+        );
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Max retries reached, failed to update cart.");
+}
+
+export async function POST(req) {
   const data = await req.json();
   const { userId, variationId, quantity } = data;
-  if (!data) {
-    return NextResponse.json("", { status: 401 });
+
+  if (!data || !userId || !variationId || !quantity) {
+    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
-  let exsistingCart = await prisma.cart?.findFirst({
-    where: {
+  try {
+    const updatedCart = await updateCartWithRetries(
       userId,
-    },
-  });
+      variationId,
+      quantity
+    );
 
-  if (!exsistingCart) {
-    exsistingCart = await prisma.cart.create({
-      data: {
-        userId,
-      },
-    });
-  }
+    const variationIds = updatedCart.cartItems.map((item) => ({
+      id: item.variationId,
+      quantity: item.quantity,
+    }));
 
-  let updatedCartItems = exsistingCart.cartItems;
-
-  if (exsistingCart.cartItems) {
-    updatedCartItems.push({ variationId, quantity: quantity || 1 });
-  } else {
-    updatedCartItems = [{ variationId, quantity: quantity || 1 }];
-  }
-
-  const updatedCart = await prisma.cart.update({
-    where: {
-      userId,
-    },
-    data: {
-      cartItems: updatedCartItems,
-    },
-  });
-
-  const variationIds = updatedCart?.cartItems?.map((i) => ({
-    id: i.variationId,
-    quantity: i.quantity,
-  }));
-
-  if (!variationIds) return NextResponse.json(updatedCart);
-
-  // const variations = await Promise.all(
-  //   variationIds.map(async (item) => {
-  //     const variation = await prisma.variation.findFirst({
-  //       where: {
-  //         id: item.id,
-  //       },
-  //       include: {
-  //         product: true,
-  //       },
-  //     });
-
-  //     return {
-  //       ...variation,
-  //       quantity: item.quantity,
-  //     };
-  //   }),
-  // );
-
-  const variations = await prisma.variation.findMany({
-    where: {
-      id: {
-        in: variationIds.map((i) => i.id),
-      },
-    },
-    include: {
-      product: true,
-    },
-  });
-
-  const modifiedData = variations.map((i) => {
-    const find = variationIds.find((v) => v.id === i.id);
-
-    return {
-      ...i,
-      quantity: find.quantity,
-    };
-  });
-
-  return NextResponse.json(
-    { ...updatedCart, cartItems: modifiedData },
-    {
-      status: 200,
+    if (!variationIds.length) {
+      return NextResponse.json(updatedCart, { status: 200 });
     }
-  );
+
+    const variations = await prisma.variation.findMany({
+      where: { id: { in: variationIds.map((item) => item.id) } },
+      include: { product: true },
+    });
+
+    const modifiedData = variations.map((variation) => {
+      const found = variationIds.find((item) => item.id === variation.id);
+      return { ...variation, quantity: found.quantity };
+    });
+
+    return NextResponse.json(
+      { ...updatedCart, cartItems: modifiedData },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating cart:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

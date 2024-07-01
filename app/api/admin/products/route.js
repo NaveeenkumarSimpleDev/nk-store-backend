@@ -43,7 +43,12 @@ export async function POST(req) {
     },
   });
 
-  return NextResponse.json(products);
+  const count = await prisma.product.count({
+    where: {
+      createdBy: user.id,
+    },
+  });
+  return NextResponse.json({ products, count });
 }
 
 export async function DELETE(req) {

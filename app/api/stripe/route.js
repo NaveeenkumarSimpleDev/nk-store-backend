@@ -35,6 +35,7 @@ export async function POST(request) {
     if (!keys) {
       return NextResponse.json("no metadata found");
     }
+
     Promise.all(
       keys.map(async (k) => {
         if (k == "userId" || k == "selectedAddress") return;
