@@ -2,81 +2,77 @@ import { getPrismaClient } from "@/provider/prismadb";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
-});
+const stripe = new Stripe(
+  "sk_test_51OhqLLSD9wybvlNM2KWBkI1tT3fZqY0d2pdlBDnTS8M5MvJqRCoixjbYrgCbjwRaIUPnGB07CKdk7qd2XmPLVbEE00lG6Ftx1V"
+);
 
-const prisma = await getPrismaClient();
 export async function GET(req) {
-  return NextResponse.json("Checkout api.");
+  return NextResponse.json("//.");
 }
 
+const prisma = await getPrismaClient();
+
 export async function POST(req) {
-  const data = await req.json();
+  try {
+    const data = await req.json();
 
-  let formatedData = [];
-  const lineItems = await Promise.all(
-    data.items.map(async (item) => {
-      const variation = await prisma.variation.findFirst({
-        where: {
-          id: item.variationId,
-        },
-        include: {
-          product: true,
-        },
-      });
+    if (!data) return NextResponse.json("No data found", { status: 404 });
 
-      if (!variation) {
-        throw new Error(`Variation with ID ${item.variationId} not found.`);
-      }
-
-      formatedData.push({
-        variationId: variation.id,
-        quantity: item.quantity,
-        buyPrice: variation.price,
-      });
-
-      return {
-        price_data: {
-          currency: "inr",
-          product_data: {
-            name: variation.product.title,
-            images: variation.images,
-          },
-          unit_amount: variation.price * 100,
-        },
-        quantity: item.quantity,
-      };
-    })
-  );
-
-  let metadata = {
-    userId: data.userId,
-    selectedAddress: data.selectedAddress,
-  };
-
-  formatedData.forEach((i, idx) => {
-    const convertToString = i.id + "," + i.quantity + "," + i.buyPrice;
-
-    metadata = {
-      ...metadata,
-      [`variation${idx + 1}`]: convertToString,
+    let metadata = {
+      userId: data?.userId,
+      selectedAddress: data?.address,
     };
-  });
 
-  if (formatedData.length > 50) {
-    return NextResponse.json("", 400);
+    data?.cartItems?.forEach((i, idx) => {
+      const convertToString = i.id + "," + i.quantity + "," + i.price;
+
+      metadata = {
+        ...metadata,
+        [`variation${idx + 1}`]: convertToString,
+      };
+    });
+
+    const amount = data?.cartItems?.reduce((prev, item) => {
+      return prev + item?.quantity * item?.price;
+    }, 0);
+    console.log({ amount });
+    if (amount <= 0)
+      return NextResponse.json("Somthing wrong", { status: 404 });
+    const address = await prisma?.address?.findFirst({
+      where: {
+        id: data?.address,
+      },
+    });
+    if (!address) return NextResponse.json("No Address found", { status: 404 });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      description: "Purchaced in Nk Store.",
+      amount,
+      metadata,
+      currency: "usd",
+      shipping: {
+        name: address.name,
+        address: {
+          line1: address.area,
+          line2: address.landmark,
+          city: address.locality,
+          state: address.state,
+          postal_code: address.pincode,
+          country: "IN",
+        },
+      },
+    });
+
+    return NextResponse.json({
+      clientSecret: paymentIntent.client_secret,
+      metadata,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message },
+      {
+        status: 500,
+      }
+    );
   }
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: lineItems,
-    metadata,
-    success_url: process.env.ALLOWED_ORIGIN + "?checkout_success=true",
-    cancel_url: process.env.ALLOWED_ORIGIN,
-    shipping_address_collection: { allowed_countries: ["IN", "US", "GB"] },
-    currency: "inr",
-  });
-
-  return new NextResponse(session.url, { status: 200 });
 }

@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb+srv://naveen:c7E6k85yhyL1IWIX@cluster0.prtxhtu.mongodb.net/test"
+  url      = env("DATABASE_URL_1")
 }
 
 model Brand {
@@ -30,6 +30,12 @@ model User {
   favouriteId String?     @db.ObjectId
   Favourite   Favourite[]
   orderItems  Orders[]
+}
+enum STATUS{
+  pending
+  dispatched
+  delivered
+  canceled
 }
 
 model Cart {
@@ -78,7 +84,8 @@ model Orders {
   shipperId    String
   orderItem    Json
   userId        String  
-  selectedAddress   String
+  selectedAddress   Json
+  status       STATUS  @default(pending)
   user          User   @relation(fields:[userId], references:[id])
   createdAt DateTime @default(now())
 }

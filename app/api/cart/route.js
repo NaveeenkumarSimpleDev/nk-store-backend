@@ -22,6 +22,8 @@ export async function POST(req, res) {
     },
   });
 
+  if (!cart) return NextResponse.json(null);
+
   const variationIds = cart?.cartItems?.map((i) => ({
     id: i.variationId,
     quantity: i.quantity,
@@ -52,6 +54,6 @@ export async function POST(req, res) {
     { ...cart, cartItems: modifiedData },
     {
       status: 200,
-    },
+    }
   );
 }
